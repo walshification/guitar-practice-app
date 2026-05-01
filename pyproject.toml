@@ -16,7 +16,7 @@ build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = [
-    "coverage-badge>=1.1",
+    "anybadge>=1.9",
     "pytest>=8",
     "pytest-cov>=5",
     "ruff>=0.4",
