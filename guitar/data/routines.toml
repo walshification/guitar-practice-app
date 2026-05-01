@@ -1,0 +1,34 @@
+[routines.beginner_warmup]
+name = "Beginner Warmup"
+description = "Light warmup covering spider walk, C major scale, and note identification"
+steps = [
+  { activity = "spider", variant = 1, start_fret = 5, bpm = 60, minutes = 5 },
+  { activity = "scales", key = "C", scale = "major", minutes = 5 },
+  { activity = "notes", string = 0, fret_max = 12, minutes = 3 },
+]
+
+[routines.blues_focus]
+name = "Blues Focus"
+description = "Deep dive into the blues scale and chord ear training"
+steps = [
+  { activity = "scales", key = "A", scale = "blues", minutes = 10 },
+  { activity = "ear_chords", minutes = 5 },
+]
+
+[routines.technique_builder]
+name = "Technique Builder"
+description = "Finger independence across multiple spider walk variants"
+steps = [
+  { activity = "spider", variant = 1, start_fret = 5, bpm = 60, minutes = 3 },
+  { activity = "spider", variant = 2, start_fret = 5, bpm = 60, minutes = 3 },
+  { activity = "spider", variant = 5, start_fret = 5, bpm = 60, minutes = 3 },
+]
+
+[routines.theory_session]
+name = "Theory Session"
+description = "Fretboard note identification and interval ear training"
+steps = [
+  { activity = "notes", string = 0, fret_max = 12, minutes = 5 },
+  { activity = "ear_intervals", minutes = 5 },
+  { activity = "ear_chords", minutes = 5 },
+]
