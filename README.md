@@ -1,5 +1,7 @@
 # guitar-practice-app
 
+![Coverage](coverage.svg)
+
 A CLI app to help practice the guitar — scales, chords, ear training, technique exercises, and timed practice sessions.
 
 ## Installation
