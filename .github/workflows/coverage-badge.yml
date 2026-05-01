@@ -15,8 +15,11 @@ jobs:
         with:
           python-version: "3.14"
       - run: make install && make build
-      - run: uv run pytest tests/ --cov=guitar --cov-report=json -q
-      - run: uv run coverage-badge -o coverage.svg -f
+      - run: uv run pytest tests/ --cov=guitar -q
+      - run: |
+          PCT=$(uv run coverage report --format=total)
+          uv run anybadge --value=$PCT --file=coverage.svg --overwrite \
+            --label=coverage --suffix='%' 50=red 60=orange 80=yellow 90=green
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: update coverage badge"
