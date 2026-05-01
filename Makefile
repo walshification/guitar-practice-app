@@ -4,7 +4,6 @@ build:
 	uv pip install -e .
 
 install:
-	uv venv
 	uv pip install --group dev
 
 fmt:
