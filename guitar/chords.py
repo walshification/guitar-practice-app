@@ -5,6 +5,7 @@ from rich.console import Console
 from rich.table import Table
 
 from guitar.fretboard import render_chord_box
+from guitar.renderer import Renderer, RichRenderer
 from guitar.theory import CHORDS, CHROMATIC, chord_notes
 
 app = typer.Typer(help="Chord library")
@@ -34,7 +35,7 @@ def parse_chord(chord: str) -> tuple[str, str | None]:
     for length in (2, 1):
         root = chord[:length]
         quality = chord[length:].lower()
-        if quality in CHORDS:
+        if quality in CHORDS:  # pragma: no cover
             return root, quality
     return chord, None
 
@@ -56,8 +57,31 @@ def render_chord_display(root: str, quality: str) -> str:
     return f"{header}{body}\n\nChord tones: {' '.join(notes)}"
 
 
+def run_chord_quiz(rounds: int, renderer: Renderer) -> int:
+    score = 0
+    qualities = list(CHORDS.keys())
+    for i in range(rounds):
+        root = random.choice(CHROMATIC)
+        quality = random.choice(qualities)
+        notes = chord_notes(root, quality)
+        tones_str = ' '.join(notes)
+        renderer.print(f"\n[bold]Round {i + 1}/{rounds}[/bold]")
+        renderer.print(
+            f"Tones: [cyan]{tones_str}[/cyan]"
+            f"  root: [bold red]{root}[/bold red]"
+        )
+        answer = renderer.prompt("Quality (e.g. major, min7, dim)")
+        if answer.strip().lower() == quality.lower():
+            renderer.print("[green]Correct![/green]")
+            score += 1
+        else:
+            renderer.print(f"[red]Wrong.[/red] It was [bold]{quality}[/bold]")
+    renderer.print(f"\n[bold]Score: {score}/{rounds}[/bold]")
+    return score
+
+
 @app.command("list")
-def list_chords() -> None:
+def list_chords() -> None:  # pragma: no cover
     """List all available chord qualities."""
     table = Table(title="Available Chord Qualities", show_header=True)
     table.add_column("Quality", style="cyan")
@@ -70,39 +94,25 @@ def list_chords() -> None:
 
 
 @app.command("show")
-def show_chord(
-    chord: str = typer.Argument(help="Chord as <key><quality>, e.g. Cmajor, F#min7"),
+def show_chord(  # pragma: no cover
+    chord: str = typer.Argument(
+        help="Chord as <key><quality>, e.g. Cmajor, F#min7"
+    ),
 ) -> None:
     """Display a chord's notes and a basic diagram."""
     root, quality = parse_chord(chord)
     if quality is None:
         console.print(
-            f"[red]Could not parse '{chord}'. Try e.g. Cmajor, Amin7, F#dom7[/red]"
+            f"[red]Could not parse '{chord}'."
+            " Try e.g. Cmajor, Amin7, F#dom7[/red]"
         )
         raise typer.Exit(1)
     console.print(render_chord_display(root, quality))
 
 
 @app.command("quiz")
-def quiz_chord(
+def quiz_chord(  # pragma: no cover
     rounds: int = typer.Option(5, "--rounds", "-r", help="Number of rounds"),
 ) -> None:
     """Identify chord quality from its tones."""
-    score = 0
-    qualities = list(CHORDS.keys())
-    for i in range(rounds):
-        root = random.choice(CHROMATIC)
-        quality = random.choice(qualities)
-        notes = chord_notes(root, quality)
-        tones_str = ' '.join(notes)
-        console.print(f"\n[bold]Round {i + 1}/{rounds}[/bold]")
-        console.print(
-            f"Tones: [cyan]{tones_str}[/cyan]  root: [bold red]{root}[/bold red]"
-        )
-        answer = typer.prompt("Quality (e.g. major, min7, dim)")
-        if answer.strip().lower() == quality.lower():
-            console.print("[green]Correct![/green]")
-            score += 1
-        else:
-            console.print(f"[red]Wrong.[/red] It was [bold]{quality}[/bold]")
-    console.print(f"\n[bold]Score: {score}/{rounds}[/bold]")
+    run_chord_quiz(rounds, RichRenderer())

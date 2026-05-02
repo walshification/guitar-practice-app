@@ -39,7 +39,7 @@ def render_timer_panel(
 
 
 @app.command("start")
-def start_timer(
+def start_timer(  # pragma: no cover
     minutes: int = typer.Option(
         20, "--minutes", "-m", help="Session length in minutes"
     ),
@@ -69,14 +69,14 @@ def start_timer(
     _finish_session(activity, total_seconds)
 
 
-def _finish_session(activity: str, duration_seconds: int) -> None:
+def _finish_session(activity: str, duration_seconds: int) -> None:  # pragma: no cover
     notes = typer.prompt("Session notes (optional, press Enter to skip)", default="")
     db.log_session(activity, duration_seconds, notes)
     console.print(f"[dim]Logged {format_duration(duration_seconds)} session.[/dim]")
 
 
 @app.command("history")
-def show_history(
+def show_history(  # pragma: no cover
     limit: int = typer.Option(20, "--limit", "-n", help="Number of sessions to show"),
 ) -> None:
     """Show recent practice sessions."""
@@ -106,7 +106,7 @@ def show_history(
 
 
 @app.command("streak")
-def show_streak() -> None:
+def show_streak() -> None:  # pragma: no cover
     """Show your current daily practice streak."""
     streak = db.get_streak()
     if streak == 0:

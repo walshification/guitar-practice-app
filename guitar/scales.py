@@ -6,6 +6,7 @@ from rich.console import Console
 from rich.table import Table
 
 from guitar.fretboard import render_fretboard
+from guitar.renderer import Renderer, RichRenderer
 from guitar.theory import CHROMATIC, SCALES, scale_notes
 
 app = typer.Typer(help="Scale trainer")
@@ -42,8 +43,27 @@ def render_scale_board(q: ScaleQuestion, fret_min: int = 0, fret_max: int = 12) 
     return f"{header}\n{legend}\n\n{board}"
 
 
+def run_scale_quiz(rounds: int, renderer: Renderer) -> int:
+    score = 0
+    for i in range(rounds):
+        q = make_scale_question()
+        renderer.print(f"\n[bold]Round {i + 1}/{rounds}[/bold]")
+        renderer.print(render_scale_board(q))
+        renderer.print(f"Notes shown: [cyan]{' '.join(q.notes)}[/cyan]")
+        answer = renderer.prompt("Name the scale (e.g. 'C major')")
+        if check_scale_answer(answer, q):
+            renderer.print("[green]Correct![/green]")
+            score += 1
+        else:
+            renderer.print(
+                f"[red]Wrong.[/red] It was [bold]{q.root} {q.scale}[/bold]"
+            )
+    renderer.print(f"\n[bold]Score: {score}/{rounds}[/bold]")
+    return score
+
+
 @app.command("list")
-def list_scales() -> None:
+def list_scales() -> None:  # pragma: no cover
     """List all available scales."""
     table = Table(title="Available Scales", show_header=True)
     table.add_column("Name", style="cyan")
@@ -56,7 +76,7 @@ def list_scales() -> None:
 
 
 @app.command("show")
-def show_scale(
+def show_scale(  # pragma: no cover
     key: str = typer.Argument(help="Root note (e.g. C, F#, Bb)"),
     scale: str = typer.Argument(help="Scale name (e.g. major, blues)"),
     fret_min: int = typer.Option(0, "--min", help="Starting fret"),
@@ -75,22 +95,8 @@ def show_scale(
 
 
 @app.command("quiz")
-def quiz_scale(
+def quiz_scale(  # pragma: no cover
     rounds: int = typer.Option(5, "--rounds", "-r", help="Number of rounds"),
 ) -> None:
     """Identify a displayed scale by ear/sight."""
-    score = 0
-    for i in range(rounds):
-        q = make_scale_question()
-        console.print(f"\n[bold]Round {i + 1}/{rounds}[/bold]")
-        console.print(render_scale_board(q))
-        console.print(f"Notes shown: [cyan]{' '.join(q.notes)}[/cyan]")
-        answer = typer.prompt("Name the scale (e.g. 'C major')")
-        if check_scale_answer(answer, q):
-            console.print("[green]Correct![/green]")
-            score += 1
-        else:
-            console.print(
-                f"[red]Wrong.[/red] It was [bold]{q.root} {q.scale}[/bold]"
-            )
-    console.print(f"\n[bold]Score: {score}/{rounds}[/bold]")
+    run_scale_quiz(rounds, RichRenderer())

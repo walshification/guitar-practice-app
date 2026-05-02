@@ -5,6 +5,7 @@ import typer
 from rich.console import Console
 
 from guitar.quiz import resolve_answer, score_summary
+from guitar.renderer import Renderer, RichRenderer
 from guitar.theory import (
     CHORDS,
     CHROMATIC,
@@ -84,41 +85,52 @@ def render_chord_question(q: ChordQuestion, round_num: int, total: int) -> str:
     return "\n".join(lines)
 
 
-@app.command("intervals")
-def quiz_intervals(
-    rounds: int = typer.Option(10, "--rounds", "-r", help="Number of rounds"),
-) -> None:
-    """Identify the interval between two notes."""
+def run_interval_quiz(rounds: int, renderer: Renderer) -> int:
     score = 0
     for i in range(rounds):
         q = make_interval_question()
-        console.print(render_interval_question(q, i + 1, rounds))
-        raw = typer.prompt("Answer (1-4 or interval name)")
+        renderer.print(render_interval_question(q, i + 1, rounds))
+        raw = renderer.prompt("Answer (1-4 or interval name)")
         answer = resolve_answer(raw, q.options)
         if answer == q.correct:
-            console.print("[green]Correct![/green]")
+            renderer.print("[green]Correct![/green]")
             score += 1
         else:
-            console.print(
-                f"[red]Wrong.[/red] It was [bold]{q.correct}[/bold] ({q.semitones}st)"
+            renderer.print(
+                f"[red]Wrong.[/red] It was [bold]{q.correct}[/bold]"
+                f" ({q.semitones}st)"
             )
-    console.print(f"\n[bold]Score: {score_summary(score, rounds)}[/bold]")
+    renderer.print(f"\n[bold]Score: {score_summary(score, rounds)}[/bold]")
+    return score
 
 
-@app.command("chords")
-def quiz_chords(
-    rounds: int = typer.Option(10, "--rounds", "-r", help="Number of rounds"),
-) -> None:
-    """Identify chord quality from its tones."""
+def run_chord_quiz(rounds: int, renderer: Renderer) -> int:
     score = 0
     for i in range(rounds):
         q = make_chord_question()
-        console.print(render_chord_question(q, i + 1, rounds))
-        raw = typer.prompt("Answer (1-4 or quality name)")
+        renderer.print(render_chord_question(q, i + 1, rounds))
+        raw = renderer.prompt("Answer (1-4 or quality name)")
         answer = resolve_answer(raw, q.options)
         if answer == q.quality:
-            console.print("[green]Correct![/green]")
+            renderer.print("[green]Correct![/green]")
             score += 1
         else:
-            console.print(f"[red]Wrong.[/red] It was [bold]{q.quality}[/bold]")
-    console.print(f"\n[bold]Score: {score_summary(score, rounds)}[/bold]")
+            renderer.print(f"[red]Wrong.[/red] It was [bold]{q.quality}[/bold]")
+    renderer.print(f"\n[bold]Score: {score_summary(score, rounds)}[/bold]")
+    return score
+
+
+@app.command("intervals")
+def quiz_intervals(  # pragma: no cover
+    rounds: int = typer.Option(10, "--rounds", "-r", help="Number of rounds"),
+) -> None:
+    """Identify the interval between two notes."""
+    run_interval_quiz(rounds, RichRenderer())
+
+
+@app.command("chords")
+def quiz_chords(  # pragma: no cover
+    rounds: int = typer.Option(10, "--rounds", "-r", help="Number of rounds"),
+) -> None:
+    """Identify chord quality from its tones."""
+    run_chord_quiz(rounds, RichRenderer())

@@ -6,6 +6,7 @@ from rich.console import Console
 
 from guitar.fretboard import render_fretboard
 from guitar.quiz import resolve_answer, score_summary
+from guitar.renderer import Renderer, RichRenderer
 from guitar.theory import CHROMATIC, STANDARD_TUNING, note_at
 
 app = typer.Typer(help="Technique exercises")
@@ -101,8 +102,46 @@ def render_note_question(q: NoteQuestion, round_num: int, total: int) -> str:
     return "\n".join(lines)
 
 
+def run_spider_walk(
+    variant: int, start_fret: int, bpm: int, renderer: Renderer
+) -> None:
+    pattern = SPIDER_PATTERNS[variant]
+    renderer.print(f"\n[bold]Spider Walk — Variant {variant}[/bold]")
+    renderer.print(
+        f"Finger order: [cyan]{' → '.join(str(f) for f in pattern)}[/cyan]"
+    )
+    renderer.print(
+        f"Start fret: [cyan]{start_fret}[/cyan]   BPM: [cyan]{bpm}[/cyan]"
+    )
+    renderer.print(
+        "\nPress [bold]Enter[/bold] to advance, [bold]Ctrl-C[/bold] to stop.\n"
+    )
+    for step in spider_walk_steps(variant, start_fret):
+        renderer.print(render_spider_step(step, start_fret))
+        renderer.prompt("")
+    renderer.print("[bold green]Pattern complete![/bold green]")
+
+
+def run_note_identification(
+    rounds: int, string_indices: list[int], fret_max: int, renderer: Renderer
+) -> int:
+    score = 0
+    for i in range(rounds):
+        q = make_note_question(string_indices, fret_max)
+        renderer.print(render_note_question(q, i + 1, rounds))
+        raw = renderer.prompt("Note")
+        answer = resolve_answer(raw, q.options)
+        if answer == q.correct:
+            renderer.print("[green]Correct![/green]")
+            score += 1
+        else:
+            renderer.print(f"[red]Wrong.[/red] It was [bold]{q.correct}[/bold]")
+    renderer.print(f"\n[bold]Score: {score_summary(score, rounds)}[/bold]")
+    return score
+
+
 @app.command("spider")
-def spider_walk(
+def spider_walk(  # pragma: no cover
     variant: int = typer.Option(1, "--variant", "-v", help="Pattern variant 1-5"),
     start_fret: int = typer.Option(5, "--fret", "-f", help="Starting fret"),
     bpm: int = typer.Option(60, "--bpm", help="Target BPM for the exercise"),
@@ -115,31 +154,14 @@ def spider_walk(
     if variant not in SPIDER_PATTERNS:
         console.print("[red]Variant must be 1-5.[/red]")
         raise typer.Exit(1)
-
-    pattern = SPIDER_PATTERNS[variant]
-    console.print(f"\n[bold]Spider Walk — Variant {variant}[/bold]")
-    console.print(f"Finger order: [cyan]{' → '.join(str(f) for f in pattern)}[/cyan]")
-    console.print(f"Start fret: [cyan]{start_fret}[/cyan]   BPM: [cyan]{bpm}[/cyan]")
-    console.print(
-        "\nPress [bold]Enter[/bold] to advance, [bold]Ctrl-C[/bold] to stop.\n"
-    )
-
     try:
-        for step in spider_walk_steps(variant, start_fret):
-            console.print(render_spider_step(step, start_fret))
-            try:
-                input()
-            except EOFError:
-                return
+        run_spider_walk(variant, start_fret, bpm, RichRenderer())
     except KeyboardInterrupt:
         console.print("\n[yellow]Exercise stopped.[/yellow]")
-        return
-
-    console.print("[bold green]Pattern complete![/bold green]")
 
 
 @app.command("notes")
-def note_identification(
+def note_identification(  # pragma: no cover
     rounds: int = typer.Option(15, "--rounds", "-r", help="Number of questions"),
     string_num: int = typer.Option(
         0, "--string", "-s", help="String to focus on (0 = all, 1=low E … 6=high e)"
@@ -150,17 +172,4 @@ def note_identification(
     string_indices = list(range(len(STANDARD_TUNING)))
     if string_num != 0:
         string_indices = [string_num - 1]
-
-    score = 0
-    for i in range(rounds):
-        q = make_note_question(string_indices, fret_max)
-        console.print(render_note_question(q, i + 1, rounds))
-        raw = typer.prompt("Note")
-        answer = resolve_answer(raw, q.options)
-        if answer == q.correct:
-            console.print("[green]Correct![/green]")
-            score += 1
-        else:
-            console.print(f"[red]Wrong.[/red] It was [bold]{q.correct}[/bold]")
-
-    console.print(f"\n[bold]Score: {score_summary(score, rounds)}[/bold]")
+    run_note_identification(rounds, string_indices, fret_max, RichRenderer())

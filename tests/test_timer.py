@@ -1,4 +1,4 @@
-from guitar.timer import format_duration, progress_bar
+from guitar.timer import format_duration, progress_bar, render_timer_panel
 
 
 def test_format_duration_whole_minutes():
@@ -35,3 +35,23 @@ def test_progress_bar_half():
 def test_progress_bar_length():
     bar = progress_bar(30, 100, width=20)
     assert len(bar) == 20
+
+
+def test_render_timer_panel_shows_activity():
+    panel = render_timer_panel(0, 300, 'scales')
+    assert 'scales' in str(panel.title)
+
+
+def test_render_timer_panel_shows_remaining_time():
+    panel = render_timer_panel(60, 300, 'scales')
+    assert '04:00' in str(panel.renderable)
+
+
+def test_render_timer_panel_at_zero_elapsed():
+    panel = render_timer_panel(0, 300, 'scales')
+    assert '05:00' in str(panel.renderable)
+
+
+def test_render_timer_panel_at_completion():
+    panel = render_timer_panel(300, 300, 'scales')
+    assert '00:00' in str(panel.renderable)
