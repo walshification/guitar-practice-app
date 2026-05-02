@@ -11,6 +11,7 @@ fmt:
 
 lint:
 	uv run ruff check guitar/ tests/
+	uv run mypy guitar/
 
 test:
 	uv run pytest tests/ --cov=guitar --cov-report=term-missing

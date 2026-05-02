@@ -8,8 +8,8 @@ STRING_NAMES = ['e', 'B', 'G', 'D', 'A', 'E']  # high to low for display
 
 
 def render_fretboard(
-    marked: set[str] = frozenset(),
-    roots: set[str] = frozenset(),
+    marked: frozenset[str] | set[str] = frozenset(),
+    roots: frozenset[str] | set[str] = frozenset(),
     fret_min: int = 0,
     fret_max: int = 12,
     tuning: list[str] = STANDARD_TUNING,
@@ -52,7 +52,7 @@ def render_fretboard(
 
 def render_chord_box(
     fingering: list[int | None],
-    root_strings: set[int] = frozenset(),
+    root_strings: frozenset[int] | set[int] = frozenset(),
     start_fret: int = 1,
     num_frets: int = 4,
 ) -> str:
@@ -91,9 +91,9 @@ def render_chord_box(
     return '\n'.join(parts)
 
 
-def print_fretboard(
-    marked: set[str] = frozenset(),
-    roots: set[str] = frozenset(),
+def print_fretboard(  # pragma: no cover
+    marked: frozenset[str] | set[str] = frozenset(),
+    roots: frozenset[str] | set[str] = frozenset(),
     fret_min: int = 0,
     fret_max: int = 12,
     title: str = '',

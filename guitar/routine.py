@@ -11,7 +11,7 @@ from guitar import db
 
 try:
     import tomllib
-except ImportError:
+except ImportError:  # pragma: no cover
     import tomli as tomllib  # type: ignore[no-redef]
 
 app = typer.Typer(help="Predefined practice routines")
@@ -65,9 +65,6 @@ def activity_dispatch() -> dict[str, Callable[[dict], None]]:
     def run_ear_chords(step: dict) -> None:
         ear.quiz_chords(rounds=step.get('minutes', 5) * 2)
 
-    def run_timer(step: dict) -> None:
-        start_timer(minutes=step.get('minutes', 5), activity=step['activity'])
-
     return {
         'scales': run_scales,
         'spider': run_spider,
@@ -90,7 +87,7 @@ def resolve_step(
 
 
 @app.command("list")
-def list_routines() -> None:
+def list_routines() -> None:  # pragma: no cover
     """List all available practice routines."""
     routines = load_routines()
     table = Table(title="Practice Routines", show_header=True)
@@ -111,7 +108,9 @@ def list_routines() -> None:
 
 
 @app.command("show")
-def show_routine(name: str = typer.Argument(help="Routine name")) -> None:
+def show_routine(  # pragma: no cover
+    name: str = typer.Argument(help="Routine name"),
+) -> None:
     """Preview the steps in a routine."""
     routines = load_routines()
     if name not in routines:
@@ -144,7 +143,9 @@ def show_routine(name: str = typer.Argument(help="Routine name")) -> None:
 
 
 @app.command("run")
-def run_routine(name: str = typer.Argument(help="Routine name")) -> None:
+def run_routine(  # pragma: no cover
+    name: str = typer.Argument(help="Routine name"),
+) -> None:
     """Execute a routine step by step with timers."""
     routines = load_routines()
     if name not in routines:
